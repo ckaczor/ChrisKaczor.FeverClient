@@ -15,7 +15,7 @@ public class FeverClient
     {
         _jsonSerializerOptions = new JsonSerializerOptions();
         _jsonSerializerOptions.Converters.Add(new EpochConverter());
-        _jsonSerializerOptions.Converters.Add(new BoolTimestampConverter());
+        _jsonSerializerOptions.Converters.Add(new BoolConverter());
         _jsonSerializerOptions.Converters.Add(new CommaSeparatedListConverter());
 
         _restClient = new RestClient(url);
