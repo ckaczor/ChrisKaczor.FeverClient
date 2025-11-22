@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using ChrisKaczor.FeverClient.Converters;
+﻿using ChrisKaczor.FeverClient.Converters;
 using ChrisKaczor.FeverClient.Models;
 using ChrisKaczor.FeverClient.Responses;
 using RestSharp;
+using System.Text.Json;
 
 namespace ChrisKaczor.FeverClient;
 
@@ -80,24 +80,27 @@ public class FeverClient
         return feedItemsResponse.FeedItems;
     }
 
-    public async Task<IEnumerable<FeedItem>> GetAllFeedItems()
+    public async IAsyncEnumerable<IEnumerable<FeedItem>> GetAllFeedItems()
     {
-        var allFeedItems = new List<FeedItem>();
+        var maxId = 1;
 
-        var response = (await GetFeedItems()).ToList();
-
-        while (response.Count > 0)
+        do
         {
-            allFeedItems.AddRange(response);
+            var response = await GetFeedItems(maxId);
 
-            response = (await GetFeedItems(response.Max(fi => fi.Id))).ToList();
-        }
+            var feedItemList = response.ToArray();
 
-        return allFeedItems;
+            yield return feedItemList;
+
+            if (feedItemList.Length == 0)
+                yield break;
+
+            maxId = feedItemList.Max(fi => fi.Id);
+        } while (true);
     }
 
     public async Task MarkFeedItemAsRead(int feedItemId)
-    { 
+    {
         await PostRestRequest<BaseResponse>($"mark=item&as=read&id={feedItemId}");
     }
 }
